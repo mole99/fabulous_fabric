@@ -1,0 +1,4 @@
+*.json
+*.fasm
+*_log.txt
+*.bit

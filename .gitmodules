@@ -1,0 +1,3 @@
+[submodule "fabulous_tiles"]
+	path = fabulous_tiles
+	url = ../fabulous_tiles.git

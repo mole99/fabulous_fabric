@@ -1,0 +1,214 @@
+meta:
+  version: 2
+  flow: FABulousFabric
+  substituting_steps:
+    # Save some time
+    Magic.DRC: null
+    KLayout.DRC: null
+
+    # Add steps for LVS with KLayout
+    #+Checker.LVS: OpenROAD.WriteCDL
+    #+OpenROAD.WriteCDL: KLayout.LVS
+
+# Basics
+DESIGN_NAME: eFPGA
+VERILOG_FILES: []
+
+# No extract-unique, because the power straps
+# are connected in the top-level integration
+MAGIC_NO_EXT_UNIQUE: true
+
+# Unfortunately needed
+GRT_ALLOW_CONGESTION: true
+
+# FABulous config
+FABULOUS_FABRIC_CONFIG: dir::fabric.csv
+FABULOUS_TILE_LIBRARY: dir::../fabulous_tiles/tiles/
+
+FABULOUS_TILE_SPACING: 0
+# Vertical spacing should be multiple of 0.42 (Metal2 pitch)
+# Horizontal spacing should be multiple of 0.48 (Metal3 pitch)
+# The halo was chosen so that there's just enough space for the pins
+# except for the bottom: here the clock net needs to be routed
+FABULOUS_HALO_SPACING: [ 0.48, 4.2, 0.48, 0.48 ]
+
+# Match spacing if possible
+FP_IO_HLENGTH: 0.48
+FP_IO_VLENGTH: 0.48
+
+FABULOUS_TILE_SIZES:
+  LUT4AB:           [ 231.84, 241.92 ]
+  RegFile:          [ 266.4, 241.92 ]
+  N_term_single2: [ 266.4, 60.9 ]
+  S_term_single2: [ 266.4, 59.22 ]
+  DSP_*:            [ 196.32, 241.92 ]
+  N_term_DSP:     [ 196.32, 60.9 ]
+  S_term_DSP:     [ 196.32, 59.22 ]
+  IHP_SRAM_*:       [ 108, 241.92 ]
+  N_term_IHP_SRAM: [ 108, 60.9 ]
+  S_term_IHP_SRAM: [ 108, 59.22 ]
+  W_*:              [ 68.64, 241.92 ]
+  S_*:              [ 231.84, 59.22 ]
+  N_*:              [ 231.84, 60.9 ]
+
+# Save on file space by sharing same cells
+PRIMARY_GDSII_STREAMOUT_TOOL: klayout
+KLAYOUT_CONFLICT_RESOLUTION: SkipNewCell
+
+
+# The pin placer tool has a default min distance between pins of 2 routing tracks.
+# Allow to place pins everywhere on the routing grid.
+FP_IO_MIN_DISTANCE: 0.42 # horizontal grid distance
+
+# Manual pin placement to prevent congestion
+FABULOUS_MANUAL_PINS:
+    "FrameData[0]": [Metal2, 0.24, 3453.92, 0.48, 0.4]
+    "FrameData[1]": [Metal2, 0.24, 3455.60, 0.48, 0.4]
+    "FrameData[2]": [Metal2, 0.24, 3457.28, 0.48, 0.4]
+    "FrameData[3]": [Metal2, 0.24, 3458.96, 0.48, 0.4]
+    "FrameData[4]": [Metal2, 0.24, 3460.64, 0.48, 0.4]
+    "FrameData[5]": [Metal2, 0.24, 3462.32, 0.48, 0.4]
+    "FrameData[6]": [Metal2, 0.24, 3464.00, 0.48, 0.4]
+    "FrameData[7]": [Metal2, 0.24, 3465.68, 0.48, 0.4]
+    "FrameData[8]": [Metal2, 0.24, 3467.36, 0.48, 0.4]
+    "FrameData[9]": [Metal2, 0.24, 3469.04, 0.48, 0.4]
+    "FrameData[10]": [Metal2, 0.24, 3470.72, 0.48, 0.4]
+    "FrameData[11]": [Metal2, 0.24, 3472.40, 0.48, 0.4]
+    "FrameData[12]": [Metal2, 0.24, 3474.08, 0.48, 0.4]
+    "FrameData[13]": [Metal2, 0.24, 3475.76, 0.48, 0.4]
+    "FrameData[14]": [Metal2, 0.24, 3477.44, 0.48, 0.4]
+    "FrameData[15]": [Metal2, 0.24, 3479.12, 0.48, 0.4]
+    "FrameData[16]": [Metal2, 0.24, 3480.80, 0.48, 0.4]
+    "FrameData[17]": [Metal2, 0.24, 3482.48, 0.48, 0.4]
+    "FrameData[18]": [Metal2, 0.24, 3484.16, 0.48, 0.4]
+    "FrameData[19]": [Metal2, 0.24, 3485.84, 0.48, 0.4]
+    "FrameData[20]": [Metal2, 0.24, 3487.52, 0.48, 0.4]
+    "FrameData[21]": [Metal2, 0.24, 3489.20, 0.48, 0.4]
+    "FrameData[22]": [Metal2, 0.24, 3490.88, 0.48, 0.4]
+    "FrameData[23]": [Metal2, 0.24, 3492.56, 0.48, 0.4]
+    "FrameData[24]": [Metal2, 0.24, 3494.24, 0.48, 0.4]
+    "FrameData[25]": [Metal2, 0.24, 3495.92, 0.48, 0.4]
+    "FrameData[26]": [Metal2, 0.24, 3497.60, 0.48, 0.4]
+    "FrameData[27]": [Metal2, 0.24, 3499.28, 0.48, 0.4]
+    "FrameData[28]": [Metal2, 0.24, 3500.96, 0.48, 0.4]
+    "FrameData[29]": [Metal2, 0.24, 3502.64, 0.48, 0.4]
+    "FrameData[30]": [Metal2, 0.24, 3504.32, 0.48, 0.4]
+    "FrameData[31]": [Metal2, 0.24, 3506.00, 0.48, 0.4]
+
+    "FrameData[480]": [Metal2, 0.24, 7.14, 0.48, 0.4]
+    "FrameData[481]": [Metal2, 0.24, 8.82, 0.48, 0.4]
+    "FrameData[482]": [Metal2, 0.24, 10.50, 0.48, 0.4]
+    "FrameData[483]": [Metal2, 0.24, 12.18, 0.48, 0.4]
+    "FrameData[484]": [Metal2, 0.24, 13.86, 0.48, 0.4]
+    "FrameData[485]": [Metal2, 0.24, 15.54, 0.48, 0.4]
+    "FrameData[486]": [Metal2, 0.24, 17.22, 0.48, 0.4]
+    "FrameData[487]": [Metal2, 0.24, 18.90, 0.48, 0.4]
+    "FrameData[488]": [Metal2, 0.24, 20.58, 0.48, 0.4]
+    "FrameData[489]": [Metal2, 0.24, 22.26, 0.48, 0.4]
+    "FrameData[490]": [Metal2, 0.24, 23.94, 0.48, 0.4]
+    "FrameData[491]": [Metal2, 0.24, 25.62, 0.48, 0.4]
+    "FrameData[492]": [Metal2, 0.24, 27.30, 0.48, 0.4]
+    "FrameData[493]": [Metal2, 0.24, 28.98, 0.48, 0.4]
+    "FrameData[494]": [Metal2, 0.24, 30.66, 0.48, 0.4]
+    "FrameData[495]": [Metal2, 0.24, 32.34, 0.48, 0.4]
+    "FrameData[496]": [Metal2, 0.24, 34.02, 0.48, 0.4]
+    "FrameData[497]": [Metal2, 0.24, 35.70, 0.48, 0.4]
+    "FrameData[498]": [Metal2, 0.24, 37.38, 0.48, 0.4]
+    "FrameData[499]": [Metal2, 0.24, 39.06, 0.48, 0.4]
+    "FrameData[500]": [Metal2, 0.24, 40.74, 0.48, 0.4]
+    "FrameData[501]": [Metal2, 0.24, 42.42, 0.48, 0.4]
+    "FrameData[502]": [Metal2, 0.24, 44.10, 0.48, 0.4]
+    "FrameData[503]": [Metal2, 0.24, 45.78, 0.48, 0.4]
+    "FrameData[504]": [Metal2, 0.24, 47.46, 0.48, 0.4]
+    "FrameData[505]": [Metal2, 0.24, 49.14, 0.48, 0.4]
+    "FrameData[506]": [Metal2, 0.24, 50.82, 0.48, 0.4]
+    "FrameData[507]": [Metal2, 0.24, 52.50, 0.48, 0.4]
+    "FrameData[508]": [Metal2, 0.24, 54.18, 0.48, 0.4]
+    "FrameData[509]": [Metal2, 0.24, 55.86, 0.48, 0.4]
+    "FrameData[510]": [Metal2, 0.24, 57.54, 0.48, 0.4]
+    "FrameData[511]": [Metal2, 0.24, 59.22, 0.48, 0.4]
+
+    "UserCLK":               [Metal3, 5.76, 0.2, 0.4, 0.4]
+    "FrameStrobe[0]":        [Metal3, 8.64, 0.2, 0.4, 0.4]
+    "FrameStrobe[1]":        [Metal3, 11.52, 0.2, 0.4, 0.4]
+    "FrameStrobe[2]":        [Metal3, 14.40, 0.2, 0.4, 0.4]
+    "FrameStrobe[3]":        [Metal3, 17.28, 0.2, 0.4, 0.4]
+    "FrameStrobe[4]":        [Metal3, 20.16, 0.2, 0.4, 0.4]
+    "FrameStrobe[5]":        [Metal3, 23.04, 0.2, 0.4, 0.4]
+    "FrameStrobe[6]":        [Metal3, 25.92, 0.2, 0.4, 0.4]
+    "FrameStrobe[7]":        [Metal3, 28.80, 0.2, 0.4, 0.4]
+    "FrameStrobe[8]":        [Metal3, 31.68, 0.2, 0.4, 0.4]
+    "FrameStrobe[9]":        [Metal3, 34.56, 0.2, 0.4, 0.4]
+    "FrameStrobe[10]":        [Metal3, 37.44, 0.2, 0.4, 0.4]
+    "FrameStrobe[11]":        [Metal3, 40.32, 0.2, 0.4, 0.4]
+    "FrameStrobe[12]":        [Metal3, 43.20, 0.2, 0.4, 0.4]
+    "FrameStrobe[13]":        [Metal3, 46.08, 0.2, 0.4, 0.4]
+    "FrameStrobe[14]":        [Metal3, 48.96, 0.2, 0.4, 0.4]
+    "FrameStrobe[15]":        [Metal3, 51.84, 0.2, 0.4, 0.4]
+    "FrameStrobe[16]":        [Metal3, 54.72, 0.2, 0.4, 0.4]
+    "FrameStrobe[17]":        [Metal3, 57.60, 0.2, 0.4, 0.4]
+    "FrameStrobe[18]":        [Metal3, 60.48, 0.2, 0.4, 0.4]
+    "FrameStrobe[19]":        [Metal3, 63.36, 0.2, 0.4, 0.4]
+
+    "FrameStrobe[200]": [Metal3, 2164.88, 0.2, 0.4, 0.4]
+    "FrameStrobe[201]": [Metal3, 2169.68, 0.2, 0.4, 0.4]
+    "FrameStrobe[202]": [Metal3, 2174.48, 0.2, 0.4, 0.4]
+    "FrameStrobe[203]": [Metal3, 2179.28, 0.2, 0.4, 0.4]
+    "FrameStrobe[204]": [Metal3, 2184.08, 0.2, 0.4, 0.4]
+    "FrameStrobe[205]": [Metal3, 2188.88, 0.2, 0.4, 0.4]
+    "FrameStrobe[206]": [Metal3, 2193.68, 0.2, 0.4, 0.4]
+    "FrameStrobe[207]": [Metal3, 2198.48, 0.2, 0.4, 0.4]
+    "FrameStrobe[208]": [Metal3, 2203.28, 0.2, 0.4, 0.4]
+    "FrameStrobe[209]": [Metal3, 2208.08, 0.2, 0.4, 0.4]
+    "FrameStrobe[210]": [Metal3, 2212.88, 0.2, 0.4, 0.4]
+    "FrameStrobe[211]": [Metal3, 2217.68, 0.2, 0.4, 0.4]
+    "FrameStrobe[212]": [Metal3, 2222.48, 0.2, 0.4, 0.4]
+    "FrameStrobe[213]": [Metal3, 2227.28, 0.2, 0.4, 0.4]
+    "FrameStrobe[214]": [Metal3, 2232.08, 0.2, 0.4, 0.4]
+    "FrameStrobe[215]": [Metal3, 2236.88, 0.2, 0.4, 0.4]
+    "FrameStrobe[216]": [Metal3, 2241.68, 0.2, 0.4, 0.4]
+    "FrameStrobe[217]": [Metal3, 2246.48, 0.2, 0.4, 0.4]
+    "FrameStrobe[218]": [Metal3, 2251.28, 0.2, 0.4, 0.4]
+    "FrameStrobe[219]": [Metal3, 2256.08, 0.2, 0.4, 0.4]
+
+# Clock
+CLOCK_PERIOD: 20
+CLOCK_PORT: UserCLK
+
+# Routing
+RT_CLOCK_MAX_LAYER: Metal5
+RT_MAX_LAYER: Metal5
+DRT_MAX_LAYER: Metal5
+
+# Disable stdcells
+#SYNTH_ELABORATE_ONLY: true
+RUN_POST_GPL_DESIGN_REPAIR: false
+RUN_POST_CTS_RESIZER_TIMING: false
+DESIGN_REPAIR_BUFFER_INPUT_PORTS: false
+FP_PDN_ENABLE_RAILS: false
+RUN_ANTENNA_REPAIR: false
+RUN_FILL_INSERTION: false
+RUN_TAP_ENDCAP_INSERTION: false
+RUN_CTS: false
+RUN_IRDROP_REPORT: false
+ERROR_ON_SYNTH_CHECKS: false
+
+# PDN (of the tiles) TODO
+# Needs to be the same PDN setting as for the tiles
+# as it is used to overly vertical power straps
+# at the same position as at the tiles
+FP_PDN_VERTICAL_LAYER: Metal5
+FP_PDN_HORIZONTAL_LAYER: TopMetal1
+
+FP_PDN_VWIDTH: 2.2
+FP_PDN_VSPACING: 4.0
+FP_PDN_VPITCH: 75.6
+FP_PDN_VOFFSET: 13.6
+
+FP_PDN_HWIDTH: 2.0
+FP_PDN_HSPACING: 4.0
+FP_PDN_HPITCH: 75.6
+FP_PDN_HOFFSET: 13.57
+
+VDD_PIN: VPWR
+GND_PIN: VGND

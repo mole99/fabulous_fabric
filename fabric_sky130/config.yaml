@@ -1,0 +1,81 @@
+meta:
+  version: 2
+  flow: FABulousFabric
+  substituting_steps:
+    # Save some time
+    Magic.DRC: null
+    KLayout.DRC: null
+    
+    # TODO top-level connections
+    Netgen.LVS: null
+ 
+# Basics
+DESIGN_NAME: eFPGA
+VERILOG_FILES:
+- dir::../rtl/fabric_wrapper.sv
+
+FABULOUS_FABRIC_CONFIG: dir::fabric.csv
+FABULOUS_TILE_LIBRARY: dir::../fabulous_tiles/tiles/
+
+FABULOUS_TILE_SPACING: 0
+FABULOUS_HALO_SPACING: [ 50, 30, 50, 40 ]
+FABULOUS_TILE_SIZES:
+  EF_SRAM*:         [ 168.75, 225 ]
+  "*_term_EF_SRAM": [ 168.75, 112.5 ]
+  LUT4AB:           [ 205, 225 ]
+  RegFile:          [ 245, 225 ]
+  "*_term_single2": [ 245, 56.25 ]
+  DSP*:             [ 225, 225 ]
+  "*_term_DSP":     [ 225, 56.25 ]
+  W_IO:             [ 56.25, 225 ]
+  "S_*":            [ 205, 56.25 ]
+  "N_*":            [ 205, 56.25 ]
+
+CLOCK_PERIOD: 20
+CLOCK_PORT: UserCLK
+
+# Routing
+RT_CLOCK_MAX_LAYER: met4
+RT_MAX_LAYER: met4
+DRT_MAX_LAYER: met4
+
+#TODO
+#IGNORE_DISCONNECTED_MODULES: [eFPGA]
+
+
+# Pins
+#FP_PIN_ORDER_CFG: dir::fabric_pins.cfg
+
+# Disable stdcells
+#SYNTH_ELABORATE_ONLY: true
+RUN_POST_GPL_DESIGN_REPAIR: false
+RUN_POST_CTS_RESIZER_TIMING: false
+DESIGN_REPAIR_BUFFER_INPUT_PORTS: false
+FP_PDN_ENABLE_RAILS: false
+RUN_ANTENNA_REPAIR: false
+RUN_FILL_INSERTION: false
+RUN_TAP_ENDCAP_INSERTION: false
+RUN_CTS: false
+RUN_IRDROP_REPORT: false
+ERROR_ON_SYNTH_CHECKS: false
+
+# PDN (of the tiles)
+FP_PDN_VOFFSET: 5
+FP_PDN_HOFFSET: 5
+
+FP_PDN_VWIDTH: 1.6
+FP_PDN_HWIDTH: 1.6
+
+FP_PDN_VSPACING: 3.7
+FP_PDN_HSPACING: 3.7
+
+FP_PDN_VPITCH: 30
+FP_PDN_HPITCH: 30
+
+ERROR_ON_PDN_VIOLATIONS: false
+#FP_PDN_CHECK_NODES: false
+#FP_PDN_MULTILAYER: false
+#PDN_CONNECT_MACROS_TO_GRID: false
+#PDN_ENABLE_GLOBAL_CONNECTIONS: false
+#IGNORE_DISCONNECTED_MODULES: [eFPGA]
+FP_PDN_CFG: dir::pdn_cfg.tcl

@@ -1,0 +1,38 @@
+module top(
+    input  wire        clk,
+    input  wire [47:0] io_in,
+    output wire [47:0] io_out,
+    output wire [47:0] io_oeb
+);
+
+    logic reset;
+
+    WARMBOOT_wrapper i_WARMBOOT_wrapper (
+        .SLOT   (4'd0),
+        .BOOT   (1'b0),
+        .RESET  (reset)
+    );
+
+    fsoc #( 
+        .CHUNKSIZE (8),
+        .CONF      ("MIN"),
+        .RFTYPE    ("BRAM_DP"),
+        .MTVAL     ('h0),
+        .BOOTADR   ('h0),
+        .MEMFILE   (""),
+        .MEMSIZE   (4096),
+        .MEMDLY1   (1),
+        .GPOCNT    (8)
+    ) i_fsoc (
+        .clk_i    (clk),
+        .rst_in   (!reset),
+
+        .gpi_i    (io_in[8]),
+        .gpo_o    (io_out[7:0])
+    );
+    
+    
+    assign io_oeb[8] = 1'b1;
+    assign io_oeb[7:0] = '0;
+
+endmodule
