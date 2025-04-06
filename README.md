@@ -34,3 +34,7 @@ Alternatively, just run `make test-sky130` or `make test-ihp`.
 ## Compress Files
 
 To compress all files larger than 50MB in `fabric_sky130/macro/`, run `make compress-sky130`.
+
+## License
+
+FABulous Fabric is licensed under the Apache 2.0 license.
