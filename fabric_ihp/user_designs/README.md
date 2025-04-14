@@ -13,6 +13,8 @@
 | `trigger_irq` | trigger an IRQ after a few cycles |
 | `trigger_slot0` | trigger warmboot reconfiguration to slot 0 after a few cycles |
 | `trigger_slot1` | trigger warmboot reconfiguration to slot 1 |
+| `serv` | [SERV](https://github.com/olofk/serv) in 4-bit configuration with CSRs enabled on servant, 4 kByte memory |
+| `fazyrv` | [FazyRV](https://github.com/meiniKi/FazyRV) in 1-bit configuration and default SoC, 4 kByte memory |
 
 To build individual user designs, go into one of the directories and run the commands:
 

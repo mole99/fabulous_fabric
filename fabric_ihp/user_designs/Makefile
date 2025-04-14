@@ -10,6 +10,8 @@ build_all: $(USER_DESIGNS)
 	cd trigger_slot0; make
 	cd trigger_slot1; make
 	cd trigger_irq; make
+	cd serv; make
+	cd fazyrv; make
 .PHONY: build_all
 
 clean_all: $(USER_DESIGNS)
@@ -24,4 +26,6 @@ clean_all: $(USER_DESIGNS)
 	cd trigger_slot0; make clean
 	cd trigger_slot1; make clean
 	cd trigger_irq; make clean
+	cd serv; make clean
+	cd fazyrv; make clean
 .PHONY: clean_all

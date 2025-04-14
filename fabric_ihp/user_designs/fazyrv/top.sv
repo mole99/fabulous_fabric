@@ -15,7 +15,7 @@ module top(
     fsoc #( 
         .CHUNKSIZE (1),
         .CONF      ("MIN"),
-        .RFTYPE    ("BRAM_DP"),
+        .RFTYPE    ("BRAM"),
         .MTVAL     ('h0),
         .BOOTADR   ('h0),
         .MEMFILE   (""),
