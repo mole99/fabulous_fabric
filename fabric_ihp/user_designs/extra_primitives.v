@@ -192,3 +192,77 @@ module CPU_IRQ (
 );
 
 endmodule
+
+(* blackbox *)
+module MULADD #(
+    parameter A_reg=0,
+    parameter B_reg=0,
+    parameter C_reg=0,
+    parameter signExtension=0,
+    parameter ACC=0,
+    parameter ACCout=0
+)(
+    input A0,
+    input A1,
+    input A2,
+    input A3,
+    input A4,
+    input A5,
+    input A6,
+    input A7,
+    
+    input B0,
+    input B1,
+    input B2,
+    input B3,
+    input B4,
+    input B5,
+    input B6,
+    input B7,
+    
+    input C0,
+    input C1,
+    input C2,
+    input C3,
+    input C4,
+    input C5,
+    input C6,
+    input C7,
+    input C8,
+    input C9,
+    input C10,
+    input C11,
+    input C12,
+    input C13,
+    input C14,
+    input C15,
+    input C16,
+    input C17,
+    input C18,
+    input C19,
+    
+    input clr,
+    
+    output Q0,
+    output Q1,
+    output Q2,
+    output Q3,
+    output Q4,
+    output Q5,
+    output Q6,
+    output Q7,
+    output Q8,
+    output Q9,
+    output Q10,
+    output Q11,
+    output Q12,
+    output Q13,
+    output Q14,
+    output Q15,
+    output Q16,
+    output Q17,
+    output Q18,
+    output Q19
+);
+
+endmodule
