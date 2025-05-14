@@ -1,4 +1,4 @@
-all: synth pnr bitstream
+all: synth pnr bitstream hex
 
 synth:
 	yosys \
@@ -30,11 +30,17 @@ bitstream:
 	$(DESIGN_NAME).bit
 .PHONY: bitstream
 
+hex:
+	python3 $(BIT_TO_HEX) \
+	$(DESIGN_NAME).bit \
+	$(DESIGN_NAME).hex
+
 clean:
 	rm -rf $(DESIGN_NAME).json
 	rm -rf $(DESIGN_NAME).fasm
 	rm -rf $(DESIGN_NAME)_log.txt
 	rm -rf $(DESIGN_NAME).bit
+	rm -rf $(DESIGN_NAME).hex
 .PHONY: clean
 
 help:
@@ -42,6 +48,7 @@ help:
 	@echo " synth           ... Synthesize the user design"
 	@echo " pnr             ... Run Place and Route"
 	@echo " bitstream       ... Generate the bitstream"
+	@echo " hex             ... Convert bitstream to hex"
 	@echo " clean           ... Delete all generated files"
 	@echo " help            ... Show this help message"
 .phony: help

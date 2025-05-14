@@ -46,14 +46,18 @@ initial begin
 	   $readmemh(MEMFILE, mem_r);
 	end
 end*/
+    
+    OPENRAM_256x32_1RW1R_wrapper ram0 (
+        .CSB_A      (!(cyc_i && stb_i)),
+        .WEB_A      (!we_i),
+        .WMASK_A    (be_i),
+        .ADDR_A     (adr_i[7:0]),
+        .DIN_A      (dat_i),
+        .DOUT_A     (dat_o),
 
-    EF_SRAM_1024x32_wrapper ram0 (
-        .AD    (adr_i[9:0]),
-        .BEN   ({{8{be_i[3]}}, {8{be_i[2]}}, {8{be_i[1]}}, {8{be_i[0]}}}),
-        .DI    (dat_i),
-        .EN    (cyc_i && stb_i),
-        .R_WB  (!we_i), // TODO
-        .DO    (dat_o)
+        .CSB_B      (1'b1),
+        .ADDR_B     ('0),
+        .DOUT_B     ()
     );
 
     always_ff @(posedge clk_i) begin

@@ -33,7 +33,8 @@ module top(
     end
 
     EF_DAC8_wrapper i_EF_DAC8_wrapper (
-        .VALUE (dac_value)
+        .VALUE  (dac_value),
+        .ENABLE (1'b1)
     );
 
     assign io_out = {'0, dac_value};

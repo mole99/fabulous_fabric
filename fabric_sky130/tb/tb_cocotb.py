@@ -21,14 +21,13 @@ FrameBitsPerRow = 32
 MaxFramesPerCol = 20
 FrameSelectWidth = 5 # hardcoded, should be based on NumColumns
 
-NumColumns = 12
+NumColumns = 14
 NumRows = 18
 
 BITSTREAM_START = 0xFAB0FAB1
 DESYNC_FLAG = 20
 
-FABRIC_NUM_IO_WEST = 32
-FABRIC_NUM_IO_NORTH = 16
+FABRIC_NUM_IO = 64
 
 run_all_zeros   = True
 run_all_ones    = True
@@ -36,8 +35,14 @@ run_counter     = True
 run_passthrough = True
 run_sram        = True
 run_adc_dac     = True
-run_peripheral  = True
-run_xif         = True
+
+def set_fabric_io(dut, value):
+    value = value & 0xFFFFFFFFFFFFFFFF
+    dut.io_west_in_i.value = value
+
+def get_fabric_io(dut):
+    value = dut.io_west_out_o.value
+    return value
 
 async def reset_design(dut):
     dut.rst_ni.value = 0
@@ -48,30 +53,9 @@ async def set_defaults(dut):
     dut.bitstream_data_i.value = 0
     dut.bitstream_valid_i.value = 0
     
-    dut.fabric_io_west_in_i.value = 0
-    dut.fabric_io_north_in_i.value = 0
+    dut.io_west_in_i.value = 0
     
-    dut.fabric_adc0_cmp_i.value = 0
-
-    dut.fabric_sram0_do_i.value = 0
-    dut.fabric_sram1_do_i.value = 1
-    dut.fabric_sram2_do_i.value = 2
-    dut.fabric_sram3_do_i.value = 3
-    dut.fabric_sram4_do_i.value = 4
-    dut.fabric_sram5_do_i.value = 5
-    dut.fabric_sram6_do_i.value = 6
-    dut.fabric_sram7_do_i.value = 7
-    
-    dut.fabric_xif_or_periph_i.value = 0 # XIF
-    
-    dut.fabric_rs1_i.value = 13
-    dut.fabric_rs2_i.value = 42
-    
-    dut.fabric_req_i.value = 0
-    dut.fabric_we_i.value = 0
-    dut.fabric_be_i.value = 0
-    dut.fabric_addr_i.value = 13
-    dut.fabric_wdata_i.value = 42
+    dut.adc0_cmp_i.value = 0
     
     print('Clearing bitstream!')
     
@@ -190,7 +174,7 @@ async def test_default(dut):
     """No bitstream loaded"""
 
     # Start the clock
-    c = Clock(dut.clk_i, 10, 'ns')
+    c = Clock(dut.clk_i, 20, 'ns')
     await cocotb.start(c.start())
 
     # Assign default values
@@ -205,7 +189,7 @@ async def test_all_zeros(dut):
     """Load bitstream to set output to zero"""
 
     # Start the clock
-    c = Clock(dut.clk_i, 10, 'ns')
+    c = Clock(dut.clk_i, 20, 'ns')
     await cocotb.start(c.start())
 
     # Assign default values
@@ -215,15 +199,12 @@ async def test_all_zeros(dut):
     
     await upload_bitstream(dut, 'all_zeros')
     
-    values_west = [random.randint(0,(1<<FABRIC_NUM_IO_WEST)-1) for _ in range(10)]
-    values_north = [random.randint(0,(1<<FABRIC_NUM_IO_NORTH)-1) for _ in range(10)]
+    values = [random.randint(0,(1<<FABRIC_NUM_IO)-1) for _ in range(10)]
     
-    for value_west, value_north in zip(values_west, values_north):
-        dut.fabric_io_west_in_i.value = value_west
-        dut.fabric_io_north_in_i.value = value_north
+    for value in values:
+        set_fabric_io(dut, value)
         await ClockCycles(dut.clk_i, 1)
-        assert(dut.fabric_io_west_out_o.value == 0)
-        assert(dut.fabric_io_north_out_o.value == 0)
+        assert(get_fabric_io(dut) == 0)
     
     await ClockCycles(dut.clk_i, 10)
 
@@ -232,7 +213,7 @@ async def test_all_ones(dut):
     """Load bitstream to set output to ones"""
 
     # Start the clock
-    c = Clock(dut.clk_i, 10, 'ns')
+    c = Clock(dut.clk_i, 20, 'ns')
     await cocotb.start(c.start())
 
     # Assign default values
@@ -242,15 +223,12 @@ async def test_all_ones(dut):
     
     await upload_bitstream(dut, 'all_ones')
 
-    values_west = [random.randint(0,(1<<FABRIC_NUM_IO_WEST)-1) for _ in range(10)]
-    values_north = [random.randint(0,(1<<FABRIC_NUM_IO_NORTH)-1) for _ in range(10)]
+    values = [random.randint(0,(1<<FABRIC_NUM_IO)-1) for _ in range(10)]
     
-    for value_west, value_north in zip(values_west, values_north):
-        dut.fabric_io_west_in_i.value = value_west
-        dut.fabric_io_north_in_i.value = value_north
+    for value in values:
+        set_fabric_io(dut, value)
         await ClockCycles(dut.clk_i, 1)
-        assert(dut.fabric_io_west_out_o.value == (1<<FABRIC_NUM_IO_WEST)-1)
-        assert(dut.fabric_io_north_out_o.value == (1<<FABRIC_NUM_IO_NORTH)-1)
+        assert(get_fabric_io(dut) == (1<<FABRIC_NUM_IO)-1)
     
     await ClockCycles(dut.clk_i, 10)
 
@@ -259,7 +237,7 @@ async def test_counter(dut):
     """Load bitstream for counter"""
 
     # Start the clock
-    c = Clock(dut.clk_i, 10, 'ns')
+    c = Clock(dut.clk_i, 20, 'ns')
     await cocotb.start(c.start())
 
     # Assign default values
@@ -269,18 +247,21 @@ async def test_counter(dut):
     
     await upload_bitstream(dut, 'counter')
     
-    dut.fabric_io_west_in_i.value = 1
+    set_fabric_io(dut, 1)
     await ClockCycles(dut.clk_i, 5)
-    dut.fabric_io_west_in_i.value = 0
+    set_fabric_io(dut, 0)
     
-    await ClockCycles(dut.clk_i, 30)
+    MAX_CNT = 30
+    
+    await ClockCycles(dut.clk_i, MAX_CNT)
+    assert(get_fabric_io(dut) == MAX_CNT-1)
 
 @cocotb.test(skip=run_passthrough==False)
 async def test_passthrough(dut):
     """Load bitstream for test_passthrough"""
 
     # Start the clock
-    c = Clock(dut.clk_i, 10, 'ns')
+    c = Clock(dut.clk_i, 20, 'ns')
     await cocotb.start(c.start())
 
     # Assign default values
@@ -290,15 +271,12 @@ async def test_passthrough(dut):
 
     await upload_bitstream(dut, 'passthrough')
     
-    values_west = [random.randint(0,(1<<FABRIC_NUM_IO_WEST)-1) for _ in range(10)]
-    values_north = [random.randint(0,(1<<FABRIC_NUM_IO_NORTH)-1) for _ in range(10)]
+    values = [random.randint(0,(1<<FABRIC_NUM_IO)-1) for _ in range(10)]
     
-    for value_west, value_north in zip(values_west, values_north):
-        dut.fabric_io_west_in_i.value = value_west
-        dut.fabric_io_north_in_i.value = value_north
+    for value in values:
+        set_fabric_io(dut, value)
         await ClockCycles(dut.clk_i, 1)
-        assert(dut.fabric_io_west_out_o.value == value_west)
-        assert(dut.fabric_io_north_out_o.value == value_north)
+        assert(get_fabric_io(dut) == value)
     
     await ClockCycles(dut.clk_i, 10)
 
@@ -307,7 +285,7 @@ async def test_sram(dut):
     """Load bitstream for test_sram"""
 
     # Start the clock
-    c = Clock(dut.clk_i, 10, 'ns')
+    c = Clock(dut.clk_i, 20, 'ns')
     await cocotb.start(c.start())
 
     # Assign default values
@@ -317,14 +295,78 @@ async def test_sram(dut):
 
     await upload_bitstream(dut, 'sram')
     
-    for i in range(8):
+    # 16 words of data
+    sram_data = [random.randint(0,(1<<32)-1) for i in range(16)]
     
-        # Select sram
-        dut.fabric_io_west_in_i.value = i<<10
-        await ClockCycles(dut.clk_i, 4)
+    # Write all words
+    for i, data in enumerate(sram_data):
+    
+        # Select port 0 for write
+        csb_a = 0
+        web_a = 0
+        wmask_a = 0xF
+        addr_a = i
+        din_a = data
         
-        # Test the correct output of each sram
-        assert(dut.fabric_io_west_out_o.value == i)
+        # Don't use port 1
+        csb_b = 1
+        addr_b = 0
+        
+        io_in = (addr_b<<47) | (csb_b<<46) | (din_a<<14) | (addr_a<<6) | (wmask_a<<2) | (web_a<<1) | csb_a
+        
+        # Set io
+        set_fabric_io(dut, io_in)
+        
+        await ClockCycles(dut.clk_i, 1)
+    
+    # Read all words with port 0
+    for i, data in enumerate(sram_data):
+        # Select port 0 for read
+        csb_a = 0
+        web_a = 1
+        wmask_a = 0xF
+        addr_a = i
+        din_a = 0
+        
+        # Don't use port 1
+        csb_b = 1
+        addr_b = 42
+        
+        io_in = (addr_b<<47) | (csb_b<<46) | (din_a<<14) | (addr_a<<6) | (wmask_a<<2) | (web_a<<1) | csb_a
+        
+        # Set io
+        set_fabric_io(dut, io_in)
+        
+        await ClockCycles(dut.clk_i, 2)
+        
+        print(dut.io_west_out_o.value)
+        
+        print(dut.io_west_out_o.value[0:31])
+        print(dut.io_west_out_o.value[32:63])
+
+        assert(dut.io_west_out_o.value[32:63].integer == data)
+
+    # Read all words with port 1
+    for i, data in enumerate(sram_data):
+        # Don't use port 0
+        csb_a = 1
+        web_a = 1
+        wmask_a = 0xF
+        addr_a = 42
+        din_a = 0
+        
+        # Select port 1 for read
+        csb_b = 0
+        addr_b = i
+        
+        io_in = (addr_b<<47) | (csb_b<<46) | (din_a<<14) | (addr_a<<6) | (wmask_a<<2) | (web_a<<1) | csb_a
+        
+        # Set io
+        set_fabric_io(dut, io_in)
+        
+        await ClockCycles(dut.clk_i, 2)
+        
+        assert(dut.io_west_out_o.value[0:31].integer == data)
     
     await ClockCycles(dut.clk_i, 10)
 
@@ -333,7 +375,7 @@ async def test_adc_dac(dut):
     """Load bitstream for adc_dac"""
 
     # Start the clock
-    c = Clock(dut.clk_i, 10, 'ns')
+    c = Clock(dut.clk_i, 20, 'ns')
     await cocotb.start(c.start())
 
     # Assign default values
@@ -343,134 +385,48 @@ async def test_adc_dac(dut):
     
     await upload_bitstream(dut, 'adc_dac')
     
-    dut.fabric_adc0_cmp_i.value = 1
+    dut.adc0_cmp_i.value = 1
     await ClockCycles(dut.clk_i, 50)
     
-    dut.fabric_adc0_cmp_i.value = 0
+    dut.adc0_cmp_i.value = 0
     await ClockCycles(dut.clk_i, 50)
 
 async def write_reg(dut, addr, data, be=0xF):
-    dut.fabric_req_i.value = 1
-    dut.fabric_we_i.value = 1
-    dut.fabric_be_i.value = be
-    dut.fabric_addr_i.value = addr
-    dut.fabric_wdata_i.value = data
+    dut.req_i.value = 1
+    dut.we_i.value = 1
+    dut.be_i.value = be
+    dut.addr_i.value = addr
+    dut.wdata_i.value = data
     
     while 1:
         await ClockCycles(dut.clk_i, 1)
-        if dut.fabric_gnt_o.value == 1 and dut.fabric_rvalid_o.value == 1:
-            dut.fabric_req_i.value = 0
-            dut.fabric_we_i.value = 0
-            dut.fabric_be_i.value = 0
-            dut.fabric_addr_i.value = 0
-            dut.fabric_wdata_i.value = 0
+        if dut.gnt_o.value == 1 and dut.rvalid_o.value == 1:
+            dut.req_i.value = 0
+            dut.we_i.value = 0
+            dut.be_i.value = 0
+            dut.addr_i.value = 0
+            dut.wdata_i.value = 0
             await ClockCycles(dut.clk_i, 1)
             return
 
 async def read_reg(dut, addr):
-    dut.fabric_req_i.value = 1
-    dut.fabric_we_i.value = 0
-    dut.fabric_be_i.value = 0
-    dut.fabric_addr_i.value = addr
-    dut.fabric_wdata_i.value = 0
+    dut.req_i.value = 1
+    dut.we_i.value = 0
+    dut.be_i.value = 0
+    dut.addr_i.value = addr
+    dut.wdata_i.value = 0
 
     while 1:
         await ClockCycles(dut.clk_i, 1)
-        if dut.fabric_gnt_o.value == 1 and dut.fabric_rvalid_o.value == 1:
-            rdata = dut.fabric_rdata_o.value
-            dut.fabric_req_i.value = 0
-            dut.fabric_we_i.value = 0
-            dut.fabric_be_i.value = 0
-            dut.fabric_addr_i.value = 0
-            dut.fabric_wdata_i.value = 0
+        if dut.gnt_o.value == 1 and dut.rvalid_o.value == 1:
+            rdata = dut.rdata_o.value
+            dut.req_i.value = 0
+            dut.we_i.value = 0
+            dut.be_i.value = 0
+            dut.addr_i.value = 0
+            dut.wdata_i.value = 0
             await ClockCycles(dut.clk_i, 1)
             return rdata
-
-@cocotb.test(skip=run_peripheral==False)
-async def test_peripheral(dut):
-    """Load bitstream for peripheral"""
-
-    # Start the clock
-    c = Clock(dut.clk_i, 10, 'ns')
-    await cocotb.start(c.start())
-
-    # Assign default values
-    await set_defaults(dut)
-    await reset_design(dut)
-    dut._log.info("Reset done")
-    
-    await upload_bitstream(dut, 'peripheral')
-
-    dut.fabric_xif_or_periph_i.value = 1 # Peripheral
-
-    NUM_REGS = 32
-
-    for i in range(NUM_REGS):
-        for _ in range(5):
-            value = random.randint(0,(1<<32)-1)
-            
-            await write_reg(dut, i, value)
-            assert (await read_reg(dut, i) == value)
-
-    for i in reversed(range(NUM_REGS)):
-        for _ in range(5):
-            value = random.randint(0,(1<<32)-1)
-            
-            await write_reg(dut, i, value)
-            assert (await read_reg(dut, i) == value)
-
-    # Test byte enable
-    await write_reg(dut, 0, 0)
-
-    await write_reg(dut, 0, 0x000000FF, be=0x1)
-    assert (await read_reg(dut, 0) == 0x000000FF)
-    
-    await write_reg(dut, 0, 0xFF000000, be=0x8)
-    assert (await read_reg(dut, 0) == 0xFF0000FF)
-    
-    await write_reg(dut, 0, 0xFFFF00FF, be=0x2)
-    assert (await read_reg(dut, 0) == 0xFF0000FF)
-    
-    await write_reg(dut, 0, 0x000000FF, be=0x8)
-    assert (await read_reg(dut, 0) == 0x000000FF)
-    
-    await write_reg(dut, 0, 0xDEADBEEF)
-    assert (await read_reg(dut, 0) == 0xDEADBEEF)
-    
-    await ClockCycles(dut.clk_i, 10)
-
-@cocotb.test(skip=run_xif==False)
-async def test_xif(dut):
-    """Load bitstream for xif"""
-
-    # Start the clock
-    c = Clock(dut.clk_i, 10, 'ns')
-    await cocotb.start(c.start())
-
-    # Assign default values
-    await set_defaults(dut)
-    await reset_design(dut)
-    dut._log.info("Reset done")
-    
-    await upload_bitstream(dut, 'xif')
-    
-    dut.fabric_xif_or_periph_i.value = 0 # XIF
-    
-    values_rs1 = [random.randint(0,(1<<32)-1) for _ in range(10)]
-    values_rs2 = [random.randint(0,(1<<32)-1) for _ in range(10)]
-    
-    for value_rs1, value_rs2 in zip(values_rs1, values_rs2):
-    
-        result = (value_rs1 + value_rs2) & 0xFFFFFFFF
-    
-        dut.fabric_rs1_i.value = value_rs1
-        dut.fabric_rs2_i.value = value_rs2
-        
-        await ClockCycles(dut.clk_i, 1)
-        
-        assert (dut.fabric_result_o.value == result)
-
-    await ClockCycles(dut.clk_i, 10)
 
 if __name__ == "__main__":
 
@@ -486,7 +442,10 @@ if __name__ == "__main__":
     sources = [
         '../rtl/fabric_wrapper.sv',
         '../../rtl/fabric_config.sv',
-        'tb_icarus.sv'
+        'tb_icarus.sv',
+        
+        # SRAM models
+        Path(pdk_root).expanduser() / pdk / "libs.ref" / "sky130_sram_macros" / "verilog" / "sky130_sram_1kbyte_1rw1r_32x256_8.v",
     ]
 
     if gl:
@@ -494,6 +453,21 @@ if __name__ == "__main__":
         sources.append(f'../macro/{pdk}/nl/eFPGA.nl.v')
         sources.append(Path(pdk_root).expanduser() / pdk / "libs.ref" / scl / "verilog" / f"{scl}.v" )
         sources.append(Path(pdk_root).expanduser() / pdk / "libs.ref" / scl / "verilog" / "primitives.v" )
+        
+        sources.append(f'{TILES_ROOT}/DSP/macro/{pdk}/nl/DSP.nl.v')
+        sources.append(f'{TILES_ROOT}/OpenRAM/macro/{pdk}/nl/OpenRAM.nl.v')
+        sources.append(f'{TILES_ROOT}/SimpleCLB/macro/{pdk}/nl/SimpleCLB.nl.v')
+        sources.append(f'{TILES_ROOT}/N_term_DSP/macro/{pdk}/nl/N_term_DSP.nl.v')
+        sources.append(f'{TILES_ROOT}/N_term_IHP_SRAM/macro/{pdk}/nl/N_term_IHP_SRAM.nl.v')
+        sources.append(f'{TILES_ROOT}/N_term_single/macro/{pdk}/nl/N_term_single.nl.v')
+        sources.append(f'{TILES_ROOT}/N_term_single2/macro/{pdk}/nl/N_term_single2.nl.v')
+        sources.append(f'{TILES_ROOT}/RegFile/macro/{pdk}/nl/RegFile.nl.v')
+        sources.append(f'{TILES_ROOT}/S_WARMBOOT/macro/{pdk}/nl/S_WARMBOOT.nl.v')
+        sources.append(f'{TILES_ROOT}/S_term_DSP/macro/{pdk}/nl/S_term_DSP.nl.v')
+        sources.append(f'{TILES_ROOT}/S_term_IHP_SRAM/macro/{pdk}/nl/S_term_IHP_SRAM.nl.v')
+        sources.append(f'{TILES_ROOT}/S_term_single/macro/{pdk}/nl/S_term_single.nl.v')
+        sources.append(f'{TILES_ROOT}/S_term_single2/macro/{pdk}/nl/S_term_single2.nl.v')
+        sources.append(f'{TILES_ROOT}/W_IO4/macro/{pdk}/nl/W_IO4.nl.v')
     else:
         # Add fabric
         sources.append(f'../macro/sky130A/fabulous/eFPGA.v')
@@ -511,12 +485,11 @@ if __name__ == "__main__":
         sources.append(f'{TILES_ROOT}/DSP/DSP_top/DSP_top_ConfigMem.v')
         sources.append(f'{TILES_ROOT}/DSP/DSP_top/DSP_top_switch_matrix.v')
         
-        # LUT4AB
-        sources.append(f'{TILES_ROOT}/LUT4AB/LUT4AB.v')
-        sources.append(f'{TILES_ROOT}/LUT4AB/LUT4AB_ConfigMem.v')
-        sources.append(f'{TILES_ROOT}/LUT4AB/LUT4AB_switch_matrix.v')
-        sources.append(f'{TILES_ROOT}/LUT4AB/LUT4c_frame_config_dffesr.v')
-        sources.append(f'{TILES_ROOT}/LUT4AB/MUX8LUT_frame_config_mux.v')
+        # SimpleCLB
+        sources.append(f'{TILES_ROOT}/SimpleCLB/SimpleCLB.v')
+        sources.append(f'{TILES_ROOT}/SimpleCLB/SimpleCLB_ConfigMem.v')
+        sources.append(f'{TILES_ROOT}/SimpleCLB/SimpleCLB_switch_matrix.v')
+        sources.append(f'{TILES_ROOT}/SimpleCLB/LUT4c_frame_config_dffesr.v')
         
         # N_term_DSP
         sources.append(f'{TILES_ROOT}/N_term_DSP/N_term_DSP.v')
@@ -554,19 +527,12 @@ if __name__ == "__main__":
         sources.append(f'{TILES_ROOT}/S_term_single2/S_term_single2_ConfigMem.v')
         sources.append(f'{TILES_ROOT}/S_term_single2/S_term_single2_switch_matrix.v')
 
-        # N_IO
-        sources.append(f'{TILES_ROOT}/N_IO/N_IO.v')
-        sources.append(f'{TILES_ROOT}/N_IO/N_IO_ConfigMem.v')
-        sources.append(f'{TILES_ROOT}/N_IO/N_IO_switch_matrix.v')
-        sources.append(f'{TILES_ROOT}/N_IO/IO_1_bidirectional_frame_config_pass.v')
-        sources.append(f'{TILES_ROOT}/N_IO/Config_access.v')
-
-        # W_IO
-        sources.append(f'{TILES_ROOT}/W_IO/W_IO.v')
-        sources.append(f'{TILES_ROOT}/W_IO/W_IO_ConfigMem.v')
-        sources.append(f'{TILES_ROOT}/W_IO/W_IO_switch_matrix.v')
-        #sources.append(f'{TILES_ROOT}/W_IO/IO_1_bidirectional_frame_config_pass.v')
-        #sources.append(f'{TILES_ROOT}/W_IO/Config_access.v')
+        # W_IO4
+        sources.append(f'{TILES_ROOT}/W_IO4/W_IO4.v')
+        sources.append(f'{TILES_ROOT}/W_IO4/W_IO4_ConfigMem.v')
+        sources.append(f'{TILES_ROOT}/W_IO4/W_IO4_switch_matrix.v')
+        sources.append(f'{TILES_ROOT}/W_IO4/IO_1_bidirectional_frame_config_pass.v')
+        sources.append(f'{TILES_ROOT}/W_IO4/Config_access.v')
         
         # S_EF_ADC12
         sources.append(f'{TILES_ROOT}/S_EF_ADC12/S_EF_ADC12.v')
@@ -585,38 +551,26 @@ if __name__ == "__main__":
         sources.append(f'{TILES_ROOT}/S_WARMBOOT/S_WARMBOOT_ConfigMem.v')
         sources.append(f'{TILES_ROOT}/S_WARMBOOT/S_WARMBOOT_switch_matrix.v')
         sources.append(f'{TILES_ROOT}/S_WARMBOOT/WARMBOOT.v')
-        
-        # S_CPU_IF
-        sources.append(f'{TILES_ROOT}/S_CPU_IF/S_CPU_IF.v')
-        sources.append(f'{TILES_ROOT}/S_CPU_IF/S_CPU_IF_ConfigMem.v')
-        sources.append(f'{TILES_ROOT}/S_CPU_IF/S_CPU_IF_switch_matrix.v')
-        sources.append(f'{TILES_ROOT}/S_CPU_IF/CPU_IF.v')
 
-        # S_CPU_IRQ
-        sources.append(f'{TILES_ROOT}/S_CPU_IRQ/S_CPU_IRQ.v')
-        sources.append(f'{TILES_ROOT}/S_CPU_IRQ/S_CPU_IRQ_ConfigMem.v')
-        sources.append(f'{TILES_ROOT}/S_CPU_IRQ/S_CPU_IRQ_switch_matrix.v')
-        sources.append(f'{TILES_ROOT}/S_CPU_IRQ/CPU_IRQ.v')
+        # OpenRAM
+        sources.append(f'{TILES_ROOT}/OpenRAM/OpenRAM.v')
+        sources.append(f'{TILES_ROOT}/OpenRAM/OpenRAM_bot/OpenRAM_bot.v')
+        sources.append(f'{TILES_ROOT}/OpenRAM/OpenRAM_bot/OpenRAM_bot_ConfigMem.v')
+        sources.append(f'{TILES_ROOT}/OpenRAM/OpenRAM_bot/OpenRAM_bot_switch_matrix.v')
+        sources.append(f'{TILES_ROOT}/OpenRAM/OpenRAM_bot/OPENRAM_256x32_1RW1R.v')
+        sources.append(f'{TILES_ROOT}/OpenRAM/OpenRAM_top/OpenRAM_top.v')
+        sources.append(f'{TILES_ROOT}/OpenRAM/OpenRAM_top/OpenRAM_top_ConfigMem.v')
+        sources.append(f'{TILES_ROOT}/OpenRAM/OpenRAM_top/OpenRAM_top_switch_matrix.v')
 
-        # EF_SRAM
-        sources.append(f'{TILES_ROOT}/EF_SRAM/EF_SRAM.v')
-        sources.append(f'{TILES_ROOT}/EF_SRAM/EF_SRAM_bot/EF_SRAM_bot.v')
-        sources.append(f'{TILES_ROOT}/EF_SRAM/EF_SRAM_bot/EF_SRAM_bot_ConfigMem.v')
-        sources.append(f'{TILES_ROOT}/EF_SRAM/EF_SRAM_bot/EF_SRAM_bot_switch_matrix.v')
-        sources.append(f'{TILES_ROOT}/EF_SRAM/EF_SRAM_bot/EF_SRAM_1024x32v2.v') # TODO
-        sources.append(f'{TILES_ROOT}/EF_SRAM/EF_SRAM_top/EF_SRAM_top.v')
-        sources.append(f'{TILES_ROOT}/EF_SRAM/EF_SRAM_top/EF_SRAM_top_ConfigMem.v')
-        sources.append(f'{TILES_ROOT}/EF_SRAM/EF_SRAM_top/EF_SRAM_top_switch_matrix.v')
+        # N_term_OpenRAM
+        sources.append(f'{TILES_ROOT}/N_term_OpenRAM/N_term_OpenRAM.v')
+        sources.append(f'{TILES_ROOT}/N_term_OpenRAM/N_term_OpenRAM_ConfigMem.v')
+        sources.append(f'{TILES_ROOT}/N_term_OpenRAM/N_term_OpenRAM_switch_matrix.v')
 
-        # N_term_EF_SRAM
-        sources.append(f'{TILES_ROOT}/N_term_EF_SRAM/N_term_EF_SRAM.v')
-        sources.append(f'{TILES_ROOT}/N_term_EF_SRAM/N_term_EF_SRAM_ConfigMem.v')
-        sources.append(f'{TILES_ROOT}/N_term_EF_SRAM/N_term_EF_SRAM_switch_matrix.v')
-
-        # S_term_EF_SRAM
-        sources.append(f'{TILES_ROOT}/S_term_EF_SRAM/S_term_EF_SRAM.v')
-        sources.append(f'{TILES_ROOT}/S_term_EF_SRAM/S_term_EF_SRAM_ConfigMem.v')
-        sources.append(f'{TILES_ROOT}/S_term_EF_SRAM/S_term_EF_SRAM_switch_matrix.v')
+        # S_term_OpenRAM
+        sources.append(f'{TILES_ROOT}/S_term_OpenRAM/S_term_OpenRAM.v')
+        sources.append(f'{TILES_ROOT}/S_term_OpenRAM/S_term_OpenRAM_ConfigMem.v')
+        sources.append(f'{TILES_ROOT}/S_term_OpenRAM/S_term_OpenRAM_switch_matrix.v')
 
         sources.append('../../fabulous_tiles/models_pack.v')
 

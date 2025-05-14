@@ -5,32 +5,250 @@ meta:
     # Save some time
     Magic.DRC: null
     KLayout.DRC: null
-    
-    # TODO top-level connections
-    Netgen.LVS: null
  
 # Basics
 DESIGN_NAME: eFPGA
-VERILOG_FILES:
-- dir::../rtl/fabric_wrapper.sv
+VERILOG_FILES: []
 
+# No extract-unique, because the power straps
+# are connected in the top-level integration
+MAGIC_NO_EXT_UNIQUE: true
+
+# Unfortunately needed
+GRT_ALLOW_CONGESTION: true
+
+# FABulous config
 FABULOUS_FABRIC_CONFIG: dir::fabric.csv
 FABULOUS_TILE_LIBRARY: dir::../fabulous_tiles/tiles/
 
 FABULOUS_TILE_SPACING: 0
-FABULOUS_HALO_SPACING: [ 50, 30, 50, 40 ]
-FABULOUS_TILE_SIZES:
-  EF_SRAM*:         [ 168.75, 225 ]
-  "*_term_EF_SRAM": [ 168.75, 112.5 ]
-  LUT4AB:           [ 205, 225 ]
-  RegFile:          [ 245, 225 ]
-  "*_term_single2": [ 245, 56.25 ]
-  DSP*:             [ 225, 225 ]
-  "*_term_DSP":     [ 225, 56.25 ]
-  W_IO:             [ 56.25, 225 ]
-  "S_*":            [ 205, 56.25 ]
-  "N_*":            [ 205, 56.25 ]
+# Vertical spacing should be multiple of 0.68 (met3 pitch)
+# Horizontal spacing should be multiple of 0.46 (met2 pitch)
+# The halo was chosen so that there's just enough space for the pins
+# except for the bottom: here the clock net needs to be routed
+FABULOUS_HALO_SPACING: [ 0.46, 6.8, 0.46, 0.0 ]
 
+# Match spacing if possible
+FP_IO_HLENGTH: 0.46
+FP_IO_VLENGTH: 0.68
+
+FABULOUS_TILE_SIZES:
+  OpenRAM*:         [ 120.06, 259.76 ]
+  "*_term_OpenRAM": [ 120.06,  55.76 ]
+  SimpleCLB:        [ 172.04, 259.76 ]
+  RegFile:          [ 230.00, 259.76 ]
+  "*_term_single2": [ 230.00,  55.76 ]
+  DSP*:             [ 199.64, 259.76 ]
+  "*_term_DSP":     [ 199.64,  55.76 ]
+  W_IO4:            [  49.68, 259.76 ]
+  "S_*":            [ 172.04,  55.76 ]
+  "N_*":            [ 172.04,  55.76 ]
+
+# Save on file space by sharing same cells
+PRIMARY_GDSII_STREAMOUT_TOOL: klayout
+KLAYOUT_CONFLICT_RESOLUTION: SkipNewCell
+
+# The pin placer tool has a default min distance between pins of 2 routing tracks.
+# Allow to place pins everywhere on the routing grid.
+FP_IO_MIN_DISTANCE: 0.46 # horizontal grid distance (smaller)
+
+# Manual pin placement to prevent congestion
+FABULOUS_MANUAL_PINS:
+    #for i in range(32):
+        #print(f'    "FrameData[{672+i}]": [met3, 0.23, {12.58+1.36*i:.2f}, 0.46, 0.6]')
+
+
+    #for i in range(32):
+        #print(f'    "FrameData[{i}]": [met3, 0.23, {3669.62+900.32+i*1.36:.2f}, 0.46, 0.6]')
+
+
+    # spacing: 1.36
+    #"FrameData[0]": [met3, 0.23, 3669.62, 0.46, 0.6]
+    #"FrameData[1]": [met3, 0.23, 3670.98, 0.46, 0.6]
+    #"FrameData[2]": [met3, 0.23, 3672.34, 0.46, 0.6]
+    #"FrameData[3]": [met3, 0.23, 3673.70, 0.46, 0.6]
+    #"FrameData[4]": [met3, 0.23, 3675.06, 0.46, 0.6]
+    #"FrameData[5]": [met3, 0.23, 3676.42, 0.46, 0.6]
+    #"FrameData[6]": [met3, 0.23, 3677.78, 0.46, 0.6]
+    #"FrameData[7]": [met3, 0.23, 3679.14, 0.46, 0.6]
+    #"FrameData[8]": [met3, 0.23, 3680.50, 0.46, 0.6]
+    #"FrameData[9]": [met3, 0.23, 3681.86, 0.46, 0.6]
+    #"FrameData[10]": [met3, 0.23, 3683.22, 0.46, 0.6]
+    #"FrameData[11]": [met3, 0.23, 3684.58, 0.46, 0.6]
+    #"FrameData[12]": [met3, 0.23, 3685.94, 0.46, 0.6]
+    #"FrameData[13]": [met3, 0.23, 3687.30, 0.46, 0.6]
+    #"FrameData[14]": [met3, 0.23, 3688.66, 0.46, 0.6]
+    #"FrameData[15]": [met3, 0.23, 3690.02, 0.46, 0.6]
+    #"FrameData[16]": [met3, 0.23, 3691.38, 0.46, 0.6]
+    #"FrameData[17]": [met3, 0.23, 3692.74, 0.46, 0.6]
+    #"FrameData[18]": [met3, 0.23, 3694.10, 0.46, 0.6]
+    #"FrameData[19]": [met3, 0.23, 3695.46, 0.46, 0.6]
+    #"FrameData[20]": [met3, 0.23, 3696.82, 0.46, 0.6]
+    #"FrameData[21]": [met3, 0.23, 3698.18, 0.46, 0.6]
+    #"FrameData[22]": [met3, 0.23, 3699.54, 0.46, 0.6]
+    #"FrameData[23]": [met3, 0.23, 3700.90, 0.46, 0.6]
+    #"FrameData[24]": [met3, 0.23, 3702.26, 0.46, 0.6]
+    #"FrameData[25]": [met3, 0.23, 3703.62, 0.46, 0.6]
+    #"FrameData[26]": [met3, 0.23, 3704.98, 0.46, 0.6]
+    #"FrameData[27]": [met3, 0.23, 3706.34, 0.46, 0.6]
+    #"FrameData[28]": [met3, 0.23, 3707.70, 0.46, 0.6]
+    #"FrameData[29]": [met3, 0.23, 3709.06, 0.46, 0.6]
+    #"FrameData[30]": [met3, 0.23, 3710.42, 0.46, 0.6]
+    #"FrameData[31]": [met3, 0.23, 3711.78, 0.46, 0.6]
+    
+    "FrameData[0]": [met3, 0.23, 4224.50, 0.46, 0.6]
+    "FrameData[1]": [met3, 0.23, 4225.86, 0.46, 0.6]
+    "FrameData[2]": [met3, 0.23, 4227.22, 0.46, 0.6]
+    "FrameData[3]": [met3, 0.23, 4228.58, 0.46, 0.6]
+    "FrameData[4]": [met3, 0.23, 4229.94, 0.46, 0.6]
+    "FrameData[5]": [met3, 0.23, 4231.30, 0.46, 0.6]
+    "FrameData[6]": [met3, 0.23, 4232.66, 0.46, 0.6]
+    "FrameData[7]": [met3, 0.23, 4234.02, 0.46, 0.6]
+    "FrameData[8]": [met3, 0.23, 4235.38, 0.46, 0.6]
+    "FrameData[9]": [met3, 0.23, 4236.74, 0.46, 0.6]
+    "FrameData[10]": [met3, 0.23, 4238.10, 0.46, 0.6]
+    "FrameData[11]": [met3, 0.23, 4239.46, 0.46, 0.6]
+    "FrameData[12]": [met3, 0.23, 4240.82, 0.46, 0.6]
+    "FrameData[13]": [met3, 0.23, 4242.18, 0.46, 0.6]
+    "FrameData[14]": [met3, 0.23, 4243.54, 0.46, 0.6]
+    "FrameData[15]": [met3, 0.23, 4244.90, 0.46, 0.6]
+    "FrameData[16]": [met3, 0.23, 4246.26, 0.46, 0.6]
+    "FrameData[17]": [met3, 0.23, 4247.62, 0.46, 0.6]
+    "FrameData[18]": [met3, 0.23, 4248.98, 0.46, 0.6]
+    "FrameData[19]": [met3, 0.23, 4250.34, 0.46, 0.6]
+    "FrameData[20]": [met3, 0.23, 4251.70, 0.46, 0.6]
+    "FrameData[21]": [met3, 0.23, 4253.06, 0.46, 0.6]
+    "FrameData[22]": [met3, 0.23, 4254.42, 0.46, 0.6]
+    "FrameData[23]": [met3, 0.23, 4255.78, 0.46, 0.6]
+    "FrameData[24]": [met3, 0.23, 4257.14, 0.46, 0.6]
+    "FrameData[25]": [met3, 0.23, 4258.50, 0.46, 0.6]
+    "FrameData[26]": [met3, 0.23, 4259.86, 0.46, 0.6]
+    "FrameData[27]": [met3, 0.23, 4261.22, 0.46, 0.6]
+    "FrameData[28]": [met3, 0.23, 4262.58, 0.46, 0.6]
+    "FrameData[29]": [met3, 0.23, 4263.94, 0.46, 0.6]
+    "FrameData[30]": [met3, 0.23, 4265.30, 0.46, 0.6]
+    "FrameData[31]": [met3, 0.23, 4266.66, 0.46, 0.6]
+    
+    #"FrameData[544]": [met3, 0.23, 12.58, 0.46, 0.6]
+    #"FrameData[545]": [met3, 0.23, 13.94, 0.46, 0.6]
+    #"FrameData[546]": [met3, 0.23, 15.30, 0.46, 0.6]
+    #"FrameData[547]": [met3, 0.23, 16.66, 0.46, 0.6]
+    #"FrameData[548]": [met3, 0.23, 18.02, 0.46, 0.6]
+    #"FrameData[549]": [met3, 0.23, 19.38, 0.46, 0.6]
+    #"FrameData[550]": [met3, 0.23, 20.74, 0.46, 0.6]
+    #"FrameData[551]": [met3, 0.23, 22.10, 0.46, 0.6]
+    #"FrameData[552]": [met3, 0.23, 23.46, 0.46, 0.6]
+    #"FrameData[553]": [met3, 0.23, 24.82, 0.46, 0.6]
+    #"FrameData[554]": [met3, 0.23, 26.18, 0.46, 0.6]
+    #"FrameData[555]": [met3, 0.23, 27.54, 0.46, 0.6]
+    #"FrameData[556]": [met3, 0.23, 28.90, 0.46, 0.6]
+    #"FrameData[557]": [met3, 0.23, 30.26, 0.46, 0.6]
+    #"FrameData[558]": [met3, 0.23, 31.62, 0.46, 0.6]
+    #"FrameData[559]": [met3, 0.23, 32.98, 0.46, 0.6]
+    #"FrameData[560]": [met3, 0.23, 34.34, 0.46, 0.6]
+    #"FrameData[561]": [met3, 0.23, 35.70, 0.46, 0.6]
+    #"FrameData[562]": [met3, 0.23, 37.06, 0.46, 0.6]
+    #"FrameData[563]": [met3, 0.23, 38.42, 0.46, 0.6]
+    #"FrameData[564]": [met3, 0.23, 39.78, 0.46, 0.6]
+    #"FrameData[565]": [met3, 0.23, 41.14, 0.46, 0.6]
+    #"FrameData[566]": [met3, 0.23, 42.50, 0.46, 0.6]
+    #"FrameData[567]": [met3, 0.23, 43.86, 0.46, 0.6]
+    #"FrameData[568]": [met3, 0.23, 45.22, 0.46, 0.6]
+    #"FrameData[569]": [met3, 0.23, 46.58, 0.46, 0.6]
+    #"FrameData[570]": [met3, 0.23, 47.94, 0.46, 0.6]
+    #"FrameData[571]": [met3, 0.23, 49.30, 0.46, 0.6]
+    #"FrameData[572]": [met3, 0.23, 50.66, 0.46, 0.6]
+    #"FrameData[573]": [met3, 0.23, 52.02, 0.46, 0.6]
+    #"FrameData[574]": [met3, 0.23, 53.38, 0.46, 0.6]
+    #"FrameData[575]": [met3, 0.23, 54.74, 0.46, 0.6]
+    
+    "FrameData[544]": [met3, 0.23, 12.58, 0.46, 0.6]
+    "FrameData[545]": [met3, 0.23, 13.94, 0.46, 0.6]
+    "FrameData[546]": [met3, 0.23, 15.30, 0.46, 0.6]
+    "FrameData[547]": [met3, 0.23, 16.66, 0.46, 0.6]
+    "FrameData[548]": [met3, 0.23, 18.02, 0.46, 0.6]
+    "FrameData[549]": [met3, 0.23, 19.38, 0.46, 0.6]
+    "FrameData[550]": [met3, 0.23, 20.74, 0.46, 0.6]
+    "FrameData[551]": [met3, 0.23, 22.10, 0.46, 0.6]
+    "FrameData[552]": [met3, 0.23, 23.46, 0.46, 0.6]
+    "FrameData[553]": [met3, 0.23, 24.82, 0.46, 0.6]
+    "FrameData[554]": [met3, 0.23, 26.18, 0.46, 0.6]
+    "FrameData[555]": [met3, 0.23, 27.54, 0.46, 0.6]
+    "FrameData[556]": [met3, 0.23, 28.90, 0.46, 0.6]
+    "FrameData[557]": [met3, 0.23, 30.26, 0.46, 0.6]
+    "FrameData[558]": [met3, 0.23, 31.62, 0.46, 0.6]
+    "FrameData[559]": [met3, 0.23, 32.98, 0.46, 0.6]
+    "FrameData[560]": [met3, 0.23, 34.34, 0.46, 0.6]
+    "FrameData[561]": [met3, 0.23, 35.70, 0.46, 0.6]
+    "FrameData[562]": [met3, 0.23, 37.06, 0.46, 0.6]
+    "FrameData[563]": [met3, 0.23, 38.42, 0.46, 0.6]
+    "FrameData[564]": [met3, 0.23, 39.78, 0.46, 0.6]
+    "FrameData[565]": [met3, 0.23, 41.14, 0.46, 0.6]
+    "FrameData[566]": [met3, 0.23, 42.50, 0.46, 0.6]
+    "FrameData[567]": [met3, 0.23, 43.86, 0.46, 0.6]
+    "FrameData[568]": [met3, 0.23, 45.22, 0.46, 0.6]
+    "FrameData[569]": [met3, 0.23, 46.58, 0.46, 0.6]
+    "FrameData[570]": [met3, 0.23, 47.94, 0.46, 0.6]
+    "FrameData[571]": [met3, 0.23, 49.30, 0.46, 0.6]
+    "FrameData[572]": [met3, 0.23, 50.66, 0.46, 0.6]
+    "FrameData[573]": [met3, 0.23, 52.02, 0.46, 0.6]
+    "FrameData[574]": [met3, 0.23, 53.38, 0.46, 0.6]
+    "FrameData[575]": [met3, 0.23, 54.74, 0.46, 0.6]
+
+    #"UserCLK": [met2, 5.29, 0.34, 0.28, 0.68]
+
+    #"FrameStrobe[0]": [met2, 7.13, 0.34, 0.28, 0.68]
+    #"FrameStrobe[1]": [met2, 8.97, 0.34, 0.28, 0.68]
+    #"FrameStrobe[2]": [met2, 10.81, 0.34, 0.28, 0.68]
+    #"FrameStrobe[3]": [met2, 12.65, 0.34, 0.28, 0.68]
+    #"FrameStrobe[4]": [met2, 14.49, 0.34, 0.28, 0.68]
+    #"FrameStrobe[5]": [met2, 16.33, 0.34, 0.28, 0.68]
+    #"FrameStrobe[6]": [met2, 18.17, 0.34, 0.28, 0.68]
+    #"FrameStrobe[7]": [met2, 20.01, 0.34, 0.28, 0.68]
+    #"FrameStrobe[8]": [met2, 21.85, 0.34, 0.28, 0.68]
+    #"FrameStrobe[9]": [met2, 23.69, 0.34, 0.28, 0.68]
+    #"FrameStrobe[10]": [met2, 25.53, 0.34, 0.28, 0.68]
+    #"FrameStrobe[11]": [met2, 27.37, 0.34, 0.28, 0.68]
+    #"FrameStrobe[12]": [met2, 29.21, 0.34, 0.28, 0.68]
+    #"FrameStrobe[13]": [met2, 31.05, 0.34, 0.28, 0.68]
+    #"FrameStrobe[14]": [met2, 32.89, 0.34, 0.28, 0.68]
+    #"FrameStrobe[15]": [met2, 34.73, 0.34, 0.28, 0.68]
+    #"FrameStrobe[16]": [met2, 36.57, 0.34, 0.28, 0.68]
+    #"FrameStrobe[17]": [met2, 38.41, 0.34, 0.28, 0.68]
+    #"FrameStrobe[18]": [met2, 40.25, 0.34, 0.28, 0.68]
+    #"FrameStrobe[19]": [met2, 42.09, 0.34, 0.28, 0.68]
+
+    "UserCLK": [met2, 4.37, 0.34, 0.28, 0.68]
+
+    "FrameStrobe[0]": [met2, 6.21, 0.34, 0.28, 0.68]
+    "FrameStrobe[1]": [met2, 8.05, 0.34, 0.28, 0.68]
+    "FrameStrobe[2]": [met2, 9.89, 0.34, 0.28, 0.68]
+    "FrameStrobe[3]": [met2, 11.73, 0.34, 0.28, 0.68]
+    "FrameStrobe[4]": [met2, 13.57, 0.34, 0.28, 0.68]
+    "FrameStrobe[5]": [met2, 15.41, 0.34, 0.28, 0.68]
+    "FrameStrobe[6]": [met2, 17.25, 0.34, 0.28, 0.68]
+    "FrameStrobe[7]": [met2, 19.09, 0.34, 0.28, 0.68]
+    "FrameStrobe[8]": [met2, 20.93, 0.34, 0.28, 0.68]
+    "FrameStrobe[9]": [met2, 22.77, 0.34, 0.28, 0.68]
+    "FrameStrobe[10]": [met2, 24.61, 0.34, 0.28, 0.68]
+    "FrameStrobe[11]": [met2, 26.45, 0.34, 0.28, 0.68]
+    "FrameStrobe[12]": [met2, 28.29, 0.34, 0.28, 0.68]
+    "FrameStrobe[13]": [met2, 30.13, 0.34, 0.28, 0.68]
+    "FrameStrobe[14]": [met2, 31.97, 0.34, 0.28, 0.68]
+    "FrameStrobe[15]": [met2, 33.81, 0.34, 0.28, 0.68]
+    "FrameStrobe[16]": [met2, 35.65, 0.34, 0.28, 0.68]
+    "FrameStrobe[17]": [met2, 37.49, 0.34, 0.28, 0.68]
+    "FrameStrobe[18]": [met2, 39.33, 0.34, 0.28, 0.68]
+    "FrameStrobe[19]": [met2, 41.17, 0.34, 0.28, 0.68]
+    
+    # Hack
+    #"Tile_X0Y20_A_config_C_bit2": [met3, 0.23, 132.26, 0.46, 0.6]
+
+    "Tile_X0Y16_A_O_top": [met3, 0.23, 71.06, 0.46, 0.6]
+    "Tile_X0Y16_A_I_top": [met3, 0.23, 75.14, 0.46, 0.6]
+
+
+# Clock
 CLOCK_PERIOD: 20
 CLOCK_PORT: UserCLK
 
@@ -38,13 +256,6 @@ CLOCK_PORT: UserCLK
 RT_CLOCK_MAX_LAYER: met4
 RT_MAX_LAYER: met4
 DRT_MAX_LAYER: met4
-
-#TODO
-#IGNORE_DISCONNECTED_MODULES: [eFPGA]
-
-
-# Pins
-#FP_PIN_ORDER_CFG: dir::fabric_pins.cfg
 
 # Disable stdcells
 #SYNTH_ELABORATE_ONLY: true
@@ -59,23 +270,22 @@ RUN_CTS: false
 RUN_IRDROP_REPORT: false
 ERROR_ON_SYNTH_CHECKS: false
 
-# PDN (of the tiles)
-FP_PDN_VOFFSET: 5
-FP_PDN_HOFFSET: 5
+# PDN (of the tiles) TODO
+# Needs to be the same PDN setting as for the tiles
+# as it is used to overly vertical power straps
+# at the same position as at the tiles
+FP_PDN_VERTICAL_LAYER: met4
+FP_PDN_HORIZONTAL_LAYER: met5
 
 FP_PDN_VWIDTH: 1.6
-FP_PDN_HWIDTH: 1.6
-
 FP_PDN_VSPACING: 3.7
-FP_PDN_HSPACING: 3.7
-
 FP_PDN_VPITCH: 30
-FP_PDN_HPITCH: 30
+FP_PDN_VOFFSET: 5
 
-ERROR_ON_PDN_VIOLATIONS: false
-#FP_PDN_CHECK_NODES: false
-#FP_PDN_MULTILAYER: false
-#PDN_CONNECT_MACROS_TO_GRID: false
-#PDN_ENABLE_GLOBAL_CONNECTIONS: false
-#IGNORE_DISCONNECTED_MODULES: [eFPGA]
-FP_PDN_CFG: dir::pdn_cfg.tcl
+FP_PDN_HWIDTH: 1.6
+FP_PDN_HSPACING: 3.7
+FP_PDN_HPITCH: 30
+FP_PDN_HOFFSET: 5
+
+VDD_PIN: VPWR
+GND_PIN: VGND

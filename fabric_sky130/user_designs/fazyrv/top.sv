@@ -1,8 +1,8 @@
-module top(
-    input  wire        clk,
-    input  wire [47:0] io_in,
-    output wire [47:0] io_out,
-    output wire [47:0] io_oeb
+module top (
+    input  wire               clk,
+    input  wire [`NUM_IO-1:0] io_in,
+    output wire [`NUM_IO-1:0] io_out,
+    output wire [`NUM_IO-1:0] io_oeb
 );
 
     logic reset;
@@ -31,8 +31,10 @@ module top(
         .gpo_o    (io_out[7:0])
     );
     
-    
-    assign io_oeb[8] = 1'b1;
     assign io_oeb[7:0] = '0;
+    assign io_oeb[8] = 1'b1;
+    assign io_oeb[`NUM_IO-1:9] = '1;
+    
+    assign io_oeb[`NUM_IO-1:8] = '0;
 
 endmodule
