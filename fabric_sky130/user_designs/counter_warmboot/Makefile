@@ -5,9 +5,9 @@ BIT_GEN = ../bit_gen.py
 BIT_TO_HEX = ../bit_to_hex.py
 
 # Adjust sources
-RTL = ../top_wrapper.v counter.sv
+RTL = ../top_wrapper.v counter_warmboot.sv ../primitive_wrappers.v
 TOP = top_wrapper
-DESIGN_NAME = counter
+DESIGN_NAME = counter_warmboot
 
 # Include base Makefile
 include ../makefile.include
